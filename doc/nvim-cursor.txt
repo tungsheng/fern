@@ -1,0 +1,288 @@
+*nvim-cursor.txt*  AI-powered code assistance for Neovim
+
+==============================================================================
+CONTENTS                                                  *nvim-cursor-contents*
+
+    1. Introduction ............................ |nvim-cursor-intro|
+    2. Requirements ............................ |nvim-cursor-requirements|
+    3. Installation ............................ |nvim-cursor-installation|
+    4. Configuration ........................... |nvim-cursor-configuration|
+    5. Usage ................................... |nvim-cursor-usage|
+    6. Commands ................................ |nvim-cursor-commands|
+    7. Keymaps ................................. |nvim-cursor-keymaps|
+    8. API ..................................... |nvim-cursor-api|
+    9. Troubleshooting ......................... |nvim-cursor-troubleshooting|
+
+==============================================================================
+INTRODUCTION                                                *nvim-cursor-intro*
+
+nvim-cursor is a Neovim plugin that provides AI-powered code assistance using
+the Cursor API. Features include:
+
+- Real-time streaming responses
+- Floating input window for prompts
+- Configurable split pane output
+- Predefined actions (explain, document, refactor)
+- Custom prompt support
+- Context-aware code analysis
+
+==============================================================================
+REQUIREMENTS                                        *nvim-cursor-requirements*
+
+- Neovim >= 0.9.0
+- curl (for API requests)
+- Cursor API key (set via CURSOR_API_KEY environment variable)
+
+==============================================================================
+INSTALLATION                                        *nvim-cursor-installation*
+
+Using lazy.nvim: >lua
+    {
+      "yourtungsheng/nvim-cursor",
+      event = "VeryLazy",
+      config = function()
+        require("nvim-cursor").setup()
+      end
+    }
+<
+
+Set your API key: >bash
+    export CURSOR_API_KEY="your-api-key-here"
+<
+
+==============================================================================
+CONFIGURATION                                      *nvim-cursor-configuration*
+
+nvim-cursor.setup({opts})                                *nvim-cursor.setup()*
+    Configure the plugin with custom options.
+
+    Parameters: ~
+        {opts}  (table) Configuration options
+
+    Default configuration: >lua
+        {
+          api = {
+            provider = "cursor",
+            cursor = {
+              endpoint = "https://api.cursor.sh/v1/chat/completions",
+              api_key = nil,  -- Reads from CURSOR_API_KEY
+              model = "gpt-4",
+              timeout = 30000,
+            },
+          },
+          ui = {
+            input = {
+              width = 80,
+              height = 10,
+              border = "rounded",
+              title = " AI Prompt ",
+            },
+            output = {
+              position = "right",  -- "right", "bottom", "left"
+              size = 50,           -- percentage
+              border = "rounded",
+              title = " AI Response ",
+              filetype = "markdown",
+            },
+          },
+          keymaps = {
+            toggle_output = "<leader>at",
+            custom_prompt = "<leader>ac",
+            explain_selection = "<leader>ae",
+            explain_buffer = "<leader>aE",
+            generate_doc = "<leader>ad",
+            refactor_code = "<leader>ar",
+          },
+          actions = {
+            explain = {
+              system_prompt = "Explain the following code...",
+              temperature = 0.3,
+            },
+            doc = {
+              system_prompt = "Generate documentation...",
+              temperature = 0.2,
+            },
+            refactor = {
+              system_prompt = "Suggest refactoring...",
+              temperature = 0.4,
+            },
+          },
+          debug = false,
+        }
+<
+
+==============================================================================
+USAGE                                                      *nvim-cursor-usage*
+
+Basic workflow:
+
+1. Select code in visual mode
+2. Press |<leader>ae| to explain the code
+3. Response streams into split pane
+4. Press |<leader>at| to toggle pane visibility
+
+Custom prompt workflow:
+
+1. Press |<leader>ac| to open prompt window
+2. Type your custom instructions
+3. Press <CR> to submit
+4. Response streams into split pane
+
+==============================================================================
+COMMANDS                                                *nvim-cursor-commands*
+
+:CursorExplain                                              *:CursorExplain*
+    Explain the currently selected code. Requires visual mode selection.
+
+:CursorDoc                                                      *:CursorDoc*
+    Generate documentation for selected code. Requires visual mode selection.
+
+:CursorRefactor                                              *:CursorRefactor*
+    Get refactoring suggestions for selected code. Requires visual mode
+    selection.
+
+:CursorPrompt                                                  *:CursorPrompt*
+    Open floating input window for custom AI prompt. Works with selection
+    or full buffer.
+
+:CursorToggle                                                  *:CursorToggle*
+    Toggle the AI response pane visibility.
+
+==============================================================================
+KEYMAPS                                                    *nvim-cursor-keymaps*
+
+Default keymaps (can be customized via configuration):
+
+<leader>ae                                                       *<leader>ae*
+    Visual mode: Explain selected code
+    
+<leader>aE                                                       *<leader>aE*
+    Normal mode: Explain entire buffer
+
+<leader>ad                                                       *<leader>ad*
+    Visual mode: Generate documentation for selected code
+
+<leader>ar                                                       *<leader>ar*
+    Visual mode: Get refactoring suggestions for selected code
+
+<leader>ac                                                       *<leader>ac*
+    Normal/Visual mode: Open custom prompt window
+
+<leader>at                                                       *<leader>at*
+    Normal/Visual mode: Toggle AI response pane
+
+==============================================================================
+API                                                            *nvim-cursor-api*
+
+For plugin developers and advanced users.
+
+------------------------------------------------------------------------------
+MODULES                                                   *nvim-cursor-modules*
+
+require("nvim-cursor")                                            *nvim-cursor*
+    Main module with setup function.
+
+    Functions: ~
+        setup({opts})          Initialize plugin with configuration
+        create_commands()      Register Ex commands
+
+require("nvim-cursor.config")                            *nvim-cursor.config*
+    Configuration management.
+
+    Functions: ~
+        setup({opts})          Setup configuration with user options
+        get()                  Get current configuration
+
+require("nvim-cursor.ui.input")                        *nvim-cursor.ui.input*
+    Floating input window.
+
+    Functions: ~
+        get_input({callback})  Show input window, call callback with prompt
+
+require("nvim-cursor.ui.output")                      *nvim-cursor.ui.output*
+    Response split pane.
+
+    Functions: ~
+        open()                 Open output pane
+        close()                Close output pane
+        toggle()               Toggle pane visibility
+        clear()                Clear pane content
+        append_text({text})    Append text to pane
+        set_text({text})       Replace pane content
+        show_error({msg})      Display error message
+
+require("nvim-cursor.context")                          *nvim-cursor.context*
+    Context extraction from buffers.
+
+    Functions: ~
+        get_visual_selection()      Get selected text
+        get_current_buffer()        Get full buffer content
+        get_buffer_info()           Get file path, type metadata
+        build_context({text}, {mode}) Format context for API
+        get_context({mode})         Get context based on mode
+
+require("nvim-cursor.actions")                          *nvim-cursor.actions*
+    Predefined AI actions.
+
+    Functions: ~
+        explain_selection()    Explain selected code
+        explain_buffer()       Explain full buffer
+        generate_doc()         Generate documentation
+        refactor_code()        Get refactoring suggestions
+        custom_prompt()        Open custom prompt input
+
+require("nvim-cursor.api.client")                  *nvim-cursor.api.client*
+    API client interface.
+
+    Functions: ~
+        send_request({prompt}, {context}, {options},
+                     {on_chunk}, {on_complete}, {on_error})
+            Send streaming API request
+        
+        register_provider({name}, {provider})
+            Register custom AI provider
+
+==============================================================================
+TROUBLESHOOTING                                    *nvim-cursor-troubleshooting*
+
+No API key found ~
+    Set CURSOR_API_KEY environment variable:
+    >bash
+        export CURSOR_API_KEY="your-key"
+<
+    Add to shell profile (~/.bashrc, ~/.zshrc) to persist.
+
+Connection errors ~
+    - Check internet connection
+    - Verify API endpoint in configuration
+    - Increase timeout: api.cursor.timeout = 60000
+    - Enable debug mode: debug = true
+
+Keymaps not working ~
+    Check for conflicts:
+    >vim
+        :verbose map <leader>ae
+<
+    Verify plugin loaded:
+    >vim
+        :echo g:loaded_vim_cursor
+<
+
+Streaming not working ~
+    - Ensure curl supports -N flag (no buffer)
+    - Update curl to latest version
+    - Check :messages for errors
+
+Enable debug logging ~
+    >lua
+        require("nvim-cursor").setup({ debug = true })
+<
+    Check :messages for detailed logs
+
+==============================================================================
+LICENSE                                                    *nvim-cursor-license*
+
+MIT License
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

@@ -1,0 +1,25 @@
+# Vim swap files
+*.swp
+*.swo
+*~
+
+# Neovim data
+.luarc.json
+.neoconf.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+.nvimlog
+
+# Environment secrets (API keys, tokens)
+.env.secrets
+*.env.local
+.env.*.local
