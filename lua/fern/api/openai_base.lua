@@ -64,6 +64,7 @@ function M.send_request(provider_name, provider_opts, prompt, context, options, 
   -- Build curl command
   local curl_cmd = {
     "curl",
+    "-sS",
     "-N",
     "-X", "POST",
     provider_opts.endpoint,

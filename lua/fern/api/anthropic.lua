@@ -64,6 +64,7 @@ function M.send_request(prompt, context, options, on_chunk, on_complete, on_erro
 
   local curl_cmd = {
     "curl",
+    "-sS",
     "-N",
     "-X", "POST",
     opts.endpoint,

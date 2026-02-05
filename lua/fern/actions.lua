@@ -41,58 +41,67 @@ local function execute_action(action_config, mode, custom_prompt)
     temperature = action_config.temperature,
   }
 
-  -- Send request with streaming
-  client.send_request(
-    custom_prompt,
-    ctx,
-    options,
-    function(chunk)
-      -- On chunk received
-      vim.schedule(function()
-        table.insert(current_response, chunk)
-        output.append_text(chunk)
-      end)
-    end,
-    function()
-      -- On complete
-      vim.schedule(function()
-        progress.stop(true)
+  -- Send request with streaming (pcall-protected to catch any Lua errors)
+  local ok, request_err = pcall(function()
+    client.send_request(
+      custom_prompt,
+      ctx,
+      options,
+      function(chunk)
+        -- On chunk received
+        vim.schedule(function()
+          table.insert(current_response, chunk)
+          output.append_text(chunk)
+        end)
+      end,
+      function()
+        -- On complete
+        vim.schedule(function()
+          progress.stop(true)
 
-        -- Save to history
-        local response_text = table.concat(current_response, "")
-        history.add_entry({
-          prompt = custom_prompt or action_config.system_prompt,
-          context = ctx,
-          mode = mode
-        }, response_text)
+          -- Save to history
+          local response_text = table.concat(current_response, "")
+          history.add_entry({
+            prompt = custom_prompt or action_config.system_prompt,
+            context = ctx,
+            mode = mode
+          }, response_text)
 
-        logger.info("Action completed successfully", {
-          response_length = #response_text
-        })
+          logger.info("Action completed successfully", {
+            response_length = #response_text
+          })
 
-        current_response = {}
-      end)
-    end,
-    function(err)
-      -- On error
-      vim.schedule(function()
-        progress.stop(false)
+          current_response = {}
+        end)
+      end,
+      function(err)
+        -- On error
+        vim.schedule(function()
+          progress.stop(false)
 
-        local errors = require("fern.api.errors")
-        local error_obj = type(err) == "table" and err or errors.from_http_error(err)
-        local formatted = errors.format_for_user(error_obj)
+          local errors = require("fern.api.errors")
+          local error_obj = type(err) == "table" and err or errors.from_http_error(err)
+          local formatted = errors.format_for_user(error_obj)
 
-        output.append_text("\n\n" .. formatted)
+          output.append_text("\n\n" .. formatted)
 
-        logger.error("Action failed", {
-          error_type = error_obj.type,
-          error_message = error_obj.message
-        })
+          logger.error("Action failed", {
+            error_type = error_obj.type,
+            error_message = error_obj.message
+          })
 
-        current_response = {}
-      end)
-    end
-  )
+          current_response = {}
+        end)
+      end
+    )
+  end)
+
+  if not ok then
+    progress.stop(false)
+    output.show_error(tostring(request_err))
+    logger.error("Request failed to send", { error = tostring(request_err) })
+    current_response = {}
+  end
 end
 
 function M.explain_selection()
