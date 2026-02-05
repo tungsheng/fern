@@ -1,13 +1,13 @@
 local M = {}
 
-local config = require("nnvim-cursor.config")
-local context = require("nnvim-cursor.context")
-local client = require("nnvim-cursor.api.client")
-local output = require("nnvim-cursor.ui.output")
-local input = require("nnvim-cursor.ui.input")
-local progress = require("nnvim-cursor.ui.progress")
-local history = require("nnvim-cursor.history")
-local logger = require("nnvim-cursor.logger")
+local config = require("nvim-cursor.config")
+local context = require("nvim-cursor.context")
+local client = require("nvim-cursor.api.client")
+local output = require("nvim-cursor.ui.output")
+local input = require("nvim-cursor.ui.input")
+local progress = require("nvim-cursor.ui.progress")
+local history = require("nvim-cursor.history")
+local logger = require("nvim-cursor.logger")
 
 local current_response = {}
 
@@ -78,7 +78,7 @@ local function execute_action(action_config, mode, custom_prompt)
       vim.schedule(function()
         progress.stop(false)
         
-        local errors = require("nnvim-cursor.api.errors")
+        local errors = require("nvim-cursor.api.errors")
         local error_obj = type(err) == "table" and err or errors.from_http_error(err)
         local formatted = errors.format_for_user(error_obj)
         
@@ -101,7 +101,7 @@ function M.explain_selection()
     local action_config = config.get().actions.explain
     execute_action(action_config, "selection", nil)
   else
-    vim.notify("nnvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
+    vim.notify("nvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
   end
 end
 
@@ -116,7 +116,7 @@ function M.generate_doc()
     local action_config = config.get().actions.doc
     execute_action(action_config, "selection", nil)
   else
-    vim.notify("nnvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
+    vim.notify("nvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
   end
 end
 
@@ -126,7 +126,7 @@ function M.refactor_code()
     local action_config = config.get().actions.refactor
     execute_action(action_config, "selection", nil)
   else
-    vim.notify("nnvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
+    vim.notify("nvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
   end
 end
 
@@ -136,7 +136,7 @@ function M.fix_bug()
     local action_config = config.get().actions.fix_bug
     execute_action(action_config, "selection", nil)
   else
-    vim.notify("nnvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
+    vim.notify("nvim-cursor: Please select code in visual mode", vim.log.levels.WARN)
   end
 end
 
