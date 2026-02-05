@@ -1,5 +1,7 @@
 local M = {}
 
+M.version = "0.1.1"
+
 local config = require("nvim-cursor.config")
 
 function M.setup(opts)
@@ -26,6 +28,7 @@ function M.setup(opts)
   -- Log initialization
   local logger = require("nvim-cursor.logger")
   logger.info("nvim-cursor initialized", {
+    version = M.version,
     model = cfg.api.cursor.model,
     log_level = cfg.log.level
   })
@@ -64,6 +67,10 @@ function M.create_commands()
   vim.api.nvim_create_user_command("CursorCancel", function(opts)
     require("nvim-cursor.api.cursor").cancel_current()
   end, { desc = "Cancel current AI request" })
+  
+  vim.api.nvim_create_user_command("CursorVersion", function(opts)
+    vim.notify("nvim-cursor version " .. M.version, vim.log.levels.INFO)
+  end, { desc = "Show plugin version" })
 end
 
 return M

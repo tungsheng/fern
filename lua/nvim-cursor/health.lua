@@ -5,6 +5,12 @@ function M.check()
   
   health.start('nvim-cursor')
   
+  -- Check plugin version
+  local ok, nvim_cursor = pcall(require, 'nvim-cursor')
+  if ok and nvim_cursor.version then
+    health.info('Plugin version: ' .. nvim_cursor.version)
+  end
+  
   -- Check Neovim version
   local version = vim.version()
   if version.major > 0 or version.minor >= 9 then

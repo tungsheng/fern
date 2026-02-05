@@ -15,7 +15,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-file context support
 - Conversation mode (multi-turn chat)
 
-## [1.0.0] - 2024-02-04
+## [0.1.1] - 2024-02-04
+
+### 🐛 Bug Fixes
+
+- [Core] Fix module name typo preventing plugin from loading (nnvim-cursor → nvim-cursor)
+
+### 📝 Documentation
+
+- Add VERSION file for version tracking
+- Add version constant to main module
+- Add `:CursorVersion` command to display plugin version
+- Include version in health check output
+- Update README with version badge
+
+## [0.1.0] - 2024-02-04
 
 ### 📈 Features/Enhancements
 

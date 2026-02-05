@@ -148,6 +148,9 @@ COMMANDS                                                *nvim-cursor-commands*
 :CursorToggle                                                  *:CursorToggle*
     Toggle the AI response pane visibility.
 
+:CursorVersion                                                *:CursorVersion*
+    Show the plugin version.
+
 ==============================================================================
 KEYMAPS                                                    *nvim-cursor-keymaps*
 

@@ -1,6 +1,7 @@
 # nvim-cursor
 
 [![GitHub](https://img.shields.io/badge/GitHub-tungsheng%2Fnvim--cursor-blue?logo=github)](https://github.com/tungsheng/nvim-cursor)
+[![Version](https://img.shields.io/badge/version-v0.1.1-blue.svg)](VERSION)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Neovim](https://img.shields.io/badge/Neovim-0.9%2B-brightgreen?logo=neovim)](https://neovim.io)
 
@@ -163,6 +164,7 @@ All actions available as commands:
 - `:CursorToggle` - Toggle output pane
 - `:CursorCancel` - Cancel request
 - `:CursorHistoryClear` - Clear history
+- `:CursorVersion` - Show plugin version
 - `:checkhealth nvim-cursor` - Run diagnostics
 
 ## Troubleshooting
