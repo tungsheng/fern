@@ -35,7 +35,14 @@ end
 
 function M.create_stream_handler(on_chunk, on_complete, on_error)
   local buffer = ""
-  
+  local completed = false
+
+  local function finish()
+    if completed then return end
+    completed = true
+    if on_complete then on_complete() end
+  end
+
   return {
     on_data = function(err, data)
       if err then
@@ -44,36 +51,32 @@ function M.create_stream_handler(on_chunk, on_complete, on_error)
         end
         return
       end
-      
+
       if not data then
-        if on_complete then
-          on_complete()
-        end
+        finish()
         return
       end
-      
+
       -- Append to buffer
       buffer = buffer .. data
-      
+
       -- Process complete lines
       local lines = vim.split(buffer, "\n", { plain = true })
-      
+
       -- Keep incomplete line in buffer
       buffer = lines[#lines]
-      
+
       -- Process complete lines
       for i = 1, #lines - 1 do
         local line = lines[i]
         if line:match("^data: ") then
           local data_content = line:gsub("^data: ", "")
-          
+
           if data_content:match("%[DONE%]") then
-            if on_complete then
-              on_complete()
-            end
+            finish()
             return
           end
-          
+
           local ok, parsed = pcall(vim.json.decode, data_content)
           if ok and parsed then
             if parsed.choices and parsed.choices[1] then
@@ -84,7 +87,7 @@ function M.create_stream_handler(on_chunk, on_complete, on_error)
                 end
               end
             end
-            
+
             if parsed.error then
               if on_error then
                 on_error(parsed.error.message or vim.inspect(parsed.error))
@@ -94,13 +97,9 @@ function M.create_stream_handler(on_chunk, on_complete, on_error)
         end
       end
     end,
-    
+
     flush = function()
-      if buffer ~= "" then
-        if on_complete then
-          on_complete()
-        end
-      end
+      finish()
     end
   }
 end

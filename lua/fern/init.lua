@@ -1,6 +1,21 @@
 local M = {}
 
-M.version = "0.2.0"
+-- Read version from VERSION file (single source of truth)
+local function read_version()
+  local info = debug.getinfo(1, "S")
+  local script_path = info.source:gsub("^@", "")
+  local plugin_root = vim.fn.fnamemodify(script_path, ":h:h:h")
+  local version_file = plugin_root .. "/VERSION"
+  local f = io.open(version_file, "r")
+  if f then
+    local v = f:read("*l")
+    f:close()
+    if v then return vim.trim(v) end
+  end
+  return "0.2.0"
+end
+
+M.version = read_version()
 
 local config = require("fern.config")
 

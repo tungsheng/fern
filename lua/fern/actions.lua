@@ -166,4 +166,17 @@ function M.custom_prompt()
   end)
 end
 
+function M.execute_custom_action(action_config)
+  local mode = vim.fn.mode()
+  local context_mode
+
+  if mode == "v" or mode == "V" or mode == "\22" then
+    context_mode = "selection"
+  else
+    context_mode = "buffer"
+  end
+
+  execute_action(action_config, context_mode, nil)
+end
+
 return M

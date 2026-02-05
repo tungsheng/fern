@@ -19,11 +19,11 @@ local function create_buffer()
   local config = require("fern.config")
   local opts = config.get().ui.output
 
-  vim.api.nvim_buf_set_option(M.buf, "bufhidden", "hide")
-  vim.api.nvim_buf_set_option(M.buf, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(M.buf, "swapfile", false)
-  vim.api.nvim_buf_set_option(M.buf, "filetype", opts.filetype)
-  vim.api.nvim_buf_set_option(M.buf, "modifiable", true)
+  vim.bo[M.buf].bufhidden = "hide"
+  vim.bo[M.buf].buftype = "nofile"
+  vim.bo[M.buf].swapfile = false
+  vim.bo[M.buf].filetype = opts.filetype
+  vim.bo[M.buf].modifiable = true
   vim.api.nvim_buf_set_name(M.buf, "fern://output")
 
   -- Set buffer-local keymaps
@@ -80,11 +80,11 @@ local function create_window()
   end
 
   -- Window options
-  vim.api.nvim_win_set_option(M.win, "wrap", true)
-  vim.api.nvim_win_set_option(M.win, "linebreak", true)
-  vim.api.nvim_win_set_option(M.win, "number", false)
-  vim.api.nvim_win_set_option(M.win, "relativenumber", false)
-  vim.api.nvim_win_set_option(M.win, "signcolumn", "no")
+  vim.wo[M.win].wrap = true
+  vim.wo[M.win].linebreak = true
+  vim.wo[M.win].number = false
+  vim.wo[M.win].relativenumber = false
+  vim.wo[M.win].signcolumn = "no"
 
   M.is_visible = true
   return M.win
@@ -116,15 +116,14 @@ end
 
 function M.clear()
   local buf = create_buffer()
-  vim.api.nvim_buf_set_option(buf, "modifiable", true)
+  vim.bo[buf].modifiable = true
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
-  vim.api.nvim_buf_set_option(buf, "modifiable", true)
 end
 
 function M.append_text(text)
   local buf = create_buffer()
 
-  vim.api.nvim_buf_set_option(buf, "modifiable", true)
+  vim.bo[buf].modifiable = true
 
   -- Get current lines
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -148,8 +147,9 @@ function M.append_text(text)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   end
 
-  -- Auto-scroll to bottom if window is visible
-  if M.win and vim.api.nvim_win_is_valid(M.win) then
+  -- Auto-scroll to bottom if window is visible and auto_scroll is enabled
+  local cfg = require("fern.config").get()
+  if cfg.ui.output.auto_scroll and M.win and vim.api.nvim_win_is_valid(M.win) then
     local line_count = vim.api.nvim_buf_line_count(buf)
     vim.api.nvim_win_set_cursor(M.win, { line_count, 0 })
   end
@@ -172,7 +172,7 @@ function M.start_new_response()
 
   -- If buffer has content, add separator
   if #lines > 0 and (lines[1] ~= "" or #lines > 1) then
-    vim.api.nvim_buf_set_option(buf, "modifiable", true)
+    vim.bo[buf].modifiable = true
     local current_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     table.insert(current_lines, "")
     table.insert(current_lines, "---")

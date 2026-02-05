@@ -70,11 +70,12 @@ function M.setup(config)
   if config.custom_actions then
     for name, action_config in pairs(config.custom_actions) do
       if action_config.keymap then
+        local ac = action_config
         vim.keymap.set(
-          action_config.mode or 'v',
-          action_config.keymap,
+          ac.mode or 'v',
+          ac.keymap,
           function()
-            actions.custom_prompt()
+            actions.execute_custom_action(ac)
           end,
           { desc = 'AI: ' .. name, silent = true }
         )

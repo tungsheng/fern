@@ -102,27 +102,31 @@ function M.check()
       if endpoint then
         health.info('Testing API connection to ' .. endpoint .. '...')
 
-        local auth_header = ""
+        local curl_args = {
+          "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
+          "-X", "POST", endpoint,
+          "-H", "Content-Type: application/json",
+          "--max-time", "5",
+        }
+
         if provider == "anthropic" then
           local api_key = vim.env.ANTHROPIC_API_KEY or ""
           if api_key ~= "" then
-            auth_header = string.format('-H "x-api-key: %s" -H "anthropic-version: %s"', api_key, provider_config.api_version or "2023-06-01")
+            table.insert(curl_args, "-H")
+            table.insert(curl_args, "x-api-key: " .. api_key)
+            table.insert(curl_args, "-H")
+            table.insert(curl_args, "anthropic-version: " .. (provider_config.api_version or "2023-06-01"))
           end
         else
           local key_name = env_var or "OPENAI_COMPAT_API_KEY"
           local api_key = vim.env[key_name] or ""
           if api_key ~= "" then
-            auth_header = string.format('-H "Authorization: Bearer %s"', api_key)
+            table.insert(curl_args, "-H")
+            table.insert(curl_args, "Authorization: Bearer " .. api_key)
           end
         end
 
-        local test_cmd = string.format(
-          'curl -s -o /dev/null -w "%%{http_code}" -X POST %s %s -H "Content-Type: application/json" --max-time 5',
-          endpoint,
-          auth_header
-        )
-
-        local result = vim.fn.system(test_cmd)
+        local result = vim.fn.system(curl_args)
         local status_code = tonumber(result)
 
         if status_code == 200 or status_code == 400 then

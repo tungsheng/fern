@@ -1,34 +1,19 @@
 local M = {}
 
 local errors = require("fern.api.errors")
+local http = require("fern.api.http")
 local logger = require("fern.logger")
 
-local current_handle = nil
-local current_stdout = nil
-local current_stderr = nil
+local PROVIDER_NAME = "anthropic"
 
 function M.cancel_current()
-  if current_handle then
-    logger.info("Cancelling current Anthropic request")
-
-    if current_stdout then current_stdout:close() end
-    if current_stderr then current_stderr:close() end
-    if current_handle then current_handle:close() end
-
-    current_handle = nil
-    current_stdout = nil
-    current_stderr = nil
-
-    vim.notify("Request cancelled", vim.log.levels.INFO)
-  end
+  http.cancel_current(PROVIDER_NAME)
 end
 
 function M.send_request(prompt, context, options, on_chunk, on_complete, on_error, retry_count)
   retry_count = retry_count or 0
 
-  if current_handle then
-    M.cancel_current()
-  end
+  http.cancel_current(PROVIDER_NAME)
 
   local config = require("fern.config")
   local opts = config.get().api.anthropic
@@ -74,14 +59,8 @@ function M.send_request(prompt, context, options, on_chunk, on_complete, on_erro
 
   local json_body = vim.json.encode(request_body)
 
-  local temp_file = vim.fn.tempname()
-  local f = io.open(temp_file, "w")
-  if not f then
-    if on_error then on_error("Failed to create temporary file") end
-    return
-  end
-  f:write(json_body)
-  f:close()
+  local temp_file = http.write_temp_body(json_body, on_error)
+  if not temp_file then return end
 
   local curl_cmd = {
     "curl",
@@ -114,86 +93,18 @@ function M.send_request(prompt, context, options, on_chunk, on_complete, on_erro
     end
   )
 
-  current_stdout = vim.loop.new_pipe(false)
-  current_stderr = vim.loop.new_pipe(false)
-
-  current_handle = vim.loop.spawn(curl_cmd[1], {
-    args = vim.list_slice(curl_cmd, 2),
-    stdio = { nil, current_stdout, current_stderr }
-  }, function(code, signal)
-    local stdout_ref = current_stdout
-    local stderr_ref = current_stderr
-    local handle_ref = current_handle
-
-    if stdout_ref then stdout_ref:close() end
-    if stderr_ref then stderr_ref:close() end
-    if handle_ref then handle_ref:close() end
-
-    current_stdout = nil
-    current_stderr = nil
-    current_handle = nil
-
-    if code ~= 0 then
-      vim.schedule(function()
-        local err = errors.new('NETWORK', 'Request failed with exit code: ' .. code)
-
-        if errors.should_retry(err, retry_count, opts.max_retries) then
-          local delay = errors.get_retry_delay(retry_count + 1, opts.retry_delay)
-
-          logger.info("Retrying Anthropic request", {
-            attempt = retry_count + 1,
-            delay_ms = delay
-          })
-
-          vim.notify(
-            string.format("Retrying request (attempt %d/%d)...", retry_count + 1, opts.max_retries),
-            vim.log.levels.INFO
-          )
-
-          vim.defer_fn(function()
-            M.send_request(prompt, context, options, on_chunk, on_complete, on_error, retry_count + 1)
-          end, delay)
-        else
-          logger.error("Anthropic request failed after retries", { code = code, retries = retry_count })
-          if on_error then on_error(err) end
-        end
-      end)
-    else
-      vim.schedule(function()
-        handler.flush()
-      end)
-    end
-  end)
-
-  if not current_handle then
-    local err = errors.new('NETWORK', 'Failed to start curl process')
-    logger.error("Failed to start curl for Anthropic", {})
-    if on_error then on_error(err) end
-    return
-  end
-
-  current_stdout:read_start(function(err, data)
-    vim.schedule(function()
-      handler.on_data(err, data)
-    end)
-  end)
-
-  local stderr_data = ""
-  current_stderr:read_start(function(err, data)
-    if data then
-      stderr_data = stderr_data .. data
-    elseif stderr_data ~= "" then
-      vim.schedule(function()
-        logger.debug("Anthropic stderr output", { data = stderr_data })
-      end)
-    end
-  end)
-
-  return {
-    cancel = function()
-      M.cancel_current()
-    end
-  }
+  return http.execute({
+    provider_name = PROVIDER_NAME,
+    curl_cmd = curl_cmd,
+    stream_handler = handler,
+    provider_opts = opts,
+    temp_file = temp_file,
+    retry_count = retry_count,
+    on_error = on_error,
+    retry_fn = function(next_retry_count)
+      M.send_request(prompt, context, options, on_chunk, on_complete, on_error, next_retry_count)
+    end,
+  })
 end
 
 return M

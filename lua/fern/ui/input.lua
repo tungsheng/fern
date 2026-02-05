@@ -7,8 +7,8 @@ function M.get_input(callback)
 
   -- Create buffer
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(buf, "filetype", "markdown")
+  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].filetype = "markdown"
 
   -- Calculate window position (centered)
   local width = opts.width
@@ -28,7 +28,7 @@ function M.get_input(callback)
 
   -- Create window
   local win = vim.api.nvim_open_win(buf, true, win_opts)
-  vim.api.nvim_win_set_option(win, "wrap", true)
+  vim.wo[win].wrap = true
 
   -- Add placeholder text
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "# Enter your prompt here", "", "" })
@@ -42,12 +42,10 @@ function M.get_input(callback)
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     vim.api.nvim_win_close(win, true)
 
-    -- Filter out the placeholder line and empty lines
+    -- Filter out the placeholder line (line 1), keep all user content including blank lines
     local prompt_lines = {}
-    for i, line in ipairs(lines) do
-      if i > 1 and line ~= "" then
-        table.insert(prompt_lines, line)
-      end
+    for i = 2, #lines do
+      table.insert(prompt_lines, lines[i])
     end
 
     local prompt = table.concat(prompt_lines, "\n"):gsub("^%s*(.-)%s*$", "%1")

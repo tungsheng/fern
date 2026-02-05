@@ -2,7 +2,7 @@ local M = {}
 
 M.defaults = {
   api = {
-    provider = "cursor",
+    provider = "anthropic",
     cursor = {
       endpoint = "https://api.cursor.sh/v1/chat/completions",
       api_key = nil,  -- MUST use env: CURSOR_API_KEY
@@ -14,7 +14,7 @@ M.defaults = {
     openai = {
       endpoint = "https://api.openai.com/v1/chat/completions",
       api_key = nil,  -- MUST use env: OPENAI_API_KEY
-      model = "gpt-4o",
+      model = "gpt-5-mini",
       timeout = 30000,
       max_retries = 3,
       retry_delay = 1000

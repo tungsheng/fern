@@ -2,6 +2,13 @@ local M = {}
 
 function M.create_stream_handler(on_chunk, on_complete, on_error)
   local buffer = ""
+  local completed = false
+
+  local function finish()
+    if completed then return end
+    completed = true
+    if on_complete then on_complete() end
+  end
 
   return {
     on_data = function(err, data)
@@ -11,7 +18,7 @@ function M.create_stream_handler(on_chunk, on_complete, on_error)
       end
 
       if not data then
-        if on_complete then on_complete() end
+        finish()
         return
       end
 
@@ -39,9 +46,7 @@ function M.create_stream_handler(on_chunk, on_complete, on_error)
 
             -- Handle message_stop event
             if parsed.type == "message_stop" then
-              if on_complete then
-                on_complete()
-              end
+              finish()
               return
             end
 
@@ -59,9 +64,7 @@ function M.create_stream_handler(on_chunk, on_complete, on_error)
     end,
 
     flush = function()
-      if buffer ~= "" then
-        if on_complete then on_complete() end
-      end
+      finish()
     end
   }
 end

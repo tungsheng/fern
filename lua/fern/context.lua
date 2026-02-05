@@ -1,5 +1,8 @@
 local M = {}
 
+local cached_git_root = nil
+local git_root_checked = false
+
 function M.get_visual_selection()
   -- Save original position
   local saved_reg = vim.fn.getreg('"')
@@ -24,14 +27,19 @@ end
 function M.get_buffer_info()
   local buf = vim.api.nvim_get_current_buf()
   local filepath = vim.api.nvim_buf_get_name(buf)
-  local filetype = vim.api.nvim_buf_get_option(buf, "filetype")
+  local filetype = vim.bo[buf].filetype
 
-  -- Get relative path if in a git repo
+  -- Get relative path if in a git repo (cached)
   local relative_path = filepath
   if filepath ~= "" then
-    local git_root = vim.fn.systemlist("git rev-parse --show-toplevel 2>/dev/null")[1]
-    if git_root and git_root ~= "" then
-      relative_path = filepath:gsub("^" .. vim.pesc(git_root) .. "/", "")
+    if not git_root_checked then
+      cached_git_root = vim.fn.systemlist("git rev-parse --show-toplevel 2>/dev/null")[1]
+      if cached_git_root == "" then cached_git_root = nil end
+      git_root_checked = true
+    end
+
+    if cached_git_root then
+      relative_path = filepath:gsub("^" .. vim.pesc(cached_git_root) .. "/", "")
     else
       relative_path = vim.fn.fnamemodify(filepath, ":t")
     end

@@ -2,31 +2,18 @@ local M = {}
 
 local stream = require("fern.api.stream")
 local errors = require("fern.api.errors")
+local http = require("fern.api.http")
 local logger = require("fern.logger")
 
--- Per-provider request state
-local active_requests = {}
-
 function M.cancel_current(provider_name)
-  local state = active_requests[provider_name]
-  if state and state.handle then
-    logger.info("Cancelling current request", { provider = provider_name })
-
-    if state.stdout then state.stdout:close() end
-    if state.stderr then state.stderr:close() end
-    if state.handle then state.handle:close() end
-
-    active_requests[provider_name] = nil
-
-    vim.notify("Request cancelled", vim.log.levels.INFO)
-  end
+  http.cancel_current(provider_name)
 end
 
 function M.send_request(provider_name, provider_opts, prompt, context, options, on_chunk, on_complete, on_error, retry_count)
   retry_count = retry_count or 0
 
   -- Cancel previous request if exists
-  M.cancel_current(provider_name)
+  http.cancel_current(provider_name)
 
   if not provider_opts.api_key then
     local err = errors.new('AUTH', 'No API key configured for ' .. provider_name)
@@ -71,15 +58,8 @@ function M.send_request(provider_name, provider_opts, prompt, context, options, 
 
   local json_body = vim.json.encode(request_body)
 
-  -- Create temporary file for request body
-  local temp_file = vim.fn.tempname()
-  local f = io.open(temp_file, "w")
-  if not f then
-    if on_error then on_error("Failed to create temporary file") end
-    return
-  end
-  f:write(json_body)
-  f:close()
+  local temp_file = http.write_temp_body(json_body, on_error)
+  if not temp_file then return end
 
   -- Build curl command
   local curl_cmd = {
@@ -112,91 +92,18 @@ function M.send_request(provider_name, provider_opts, prompt, context, options, 
     end
   )
 
-  -- Initialize request state
-  local state = {}
-  active_requests[provider_name] = state
-
-  -- Execute curl with streaming
-  state.stdout = vim.loop.new_pipe(false)
-  state.stderr = vim.loop.new_pipe(false)
-
-  state.handle = vim.loop.spawn(curl_cmd[1], {
-    args = vim.list_slice(curl_cmd, 2),
-    stdio = { nil, state.stdout, state.stderr }
-  }, function(code, signal)
-    local s = active_requests[provider_name]
-    if s then
-      if s.stdout then s.stdout:close() end
-      if s.stderr then s.stderr:close() end
-      if s.handle then s.handle:close() end
-      active_requests[provider_name] = nil
-    end
-
-    if code ~= 0 then
-      vim.schedule(function()
-        local err = errors.new('NETWORK', 'Request failed with exit code: ' .. code)
-
-        if errors.should_retry(err, retry_count, provider_opts.max_retries) then
-          local delay = errors.get_retry_delay(retry_count + 1, provider_opts.retry_delay)
-
-          logger.info("Retrying request", {
-            provider = provider_name,
-            attempt = retry_count + 1,
-            delay_ms = delay
-          })
-
-          vim.notify(
-            string.format("Retrying request (attempt %d/%d)...", retry_count + 1, provider_opts.max_retries),
-            vim.log.levels.INFO
-          )
-
-          vim.defer_fn(function()
-            M.send_request(provider_name, provider_opts, prompt, context, options, on_chunk, on_complete, on_error, retry_count + 1)
-          end, delay)
-        else
-          logger.error("Request failed after retries", { provider = provider_name, code = code, retries = retry_count })
-          if on_error then on_error(err) end
-        end
-      end)
-    else
-      vim.schedule(function()
-        handler.flush()
-      end)
-    end
-  end)
-
-  if not state.handle then
-    active_requests[provider_name] = nil
-    local err = errors.new('NETWORK', 'Failed to start curl process')
-    logger.error("Failed to start curl", { provider = provider_name })
-    if on_error then on_error(err) end
-    return
-  end
-
-  -- Read stdout
-  state.stdout:read_start(function(err, data)
-    vim.schedule(function()
-      handler.on_data(err, data)
-    end)
-  end)
-
-  -- Read stderr
-  local stderr_data = ""
-  state.stderr:read_start(function(err, data)
-    if data then
-      stderr_data = stderr_data .. data
-    elseif stderr_data ~= "" then
-      vim.schedule(function()
-        logger.debug("stderr output", { provider = provider_name, data = stderr_data })
-      end)
-    end
-  end)
-
-  return {
-    cancel = function()
-      M.cancel_current(provider_name)
-    end
-  }
+  return http.execute({
+    provider_name = provider_name,
+    curl_cmd = curl_cmd,
+    stream_handler = handler,
+    provider_opts = provider_opts,
+    temp_file = temp_file,
+    retry_count = retry_count,
+    on_error = on_error,
+    retry_fn = function(next_retry_count)
+      M.send_request(provider_name, provider_opts, prompt, context, options, on_chunk, on_complete, on_error, next_retry_count)
+    end,
+  })
 end
 
 return M
