@@ -1,4 +1,4 @@
--- Example file for testing nvim-cursor
+-- Example file for testing fern
 -- Try selecting code and using:
 --   <leader>ae - Explain this code
 --   <leader>ad - Generate documentation

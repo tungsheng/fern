@@ -1,22 +1,30 @@
 # Quick Start Guide
 
-Get nvim-cursor running in 5 minutes.
+Get fern running in 5 minutes.
 
-**Repository:** [github.com/tungsheng/nvim-cursor](https://github.com/tungsheng/nvim-cursor)
+**Repository:** [github.com/tungsheng/fern](https://github.com/tungsheng/fern)
 
 ## Step 1: Get API Key
 
-1. Go to [https://cursor.sh](https://cursor.sh)
-2. Sign up or log in
-3. Navigate to API settings
-4. Generate an API key
-5. Copy the key
+Choose your provider and get an API key:
+
+**Anthropic (Claude):** [https://console.anthropic.com](https://console.anthropic.com)
+**OpenAI:** [https://platform.openai.com](https://platform.openai.com)
+**Cursor:** [https://cursor.sh](https://cursor.sh)
+**Ollama:** Run locally, no key needed
 
 ## Step 2: Set Environment Variable
 
 Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
+# For Anthropic
+export ANTHROPIC_API_KEY="your_api_key_here"
+
+# Or for OpenAI
+export OPENAI_API_KEY="your_api_key_here"
+
+# Or for Cursor
 export CURSOR_API_KEY="your_api_key_here"
 ```
 
@@ -27,20 +35,24 @@ source ~/.zshrc  # or source ~/.bashrc
 
 Verify it's set:
 ```bash
-echo $CURSOR_API_KEY
+echo $ANTHROPIC_API_KEY  # or your chosen provider's key
 ```
 
 ## Step 3: Install Plugin
 
 ### Using lazy.nvim (Recommended)
 
-Add to your Neovim config (`~/.config/nvim/lua/plugins/nvim-cursor.lua`):
+Add to your Neovim config (`~/.config/nvim/lua/plugins/fern.lua`):
 
 ```lua
 return {
-  "tungsheng/nvim-cursor",
+  "tungsheng/fern",
   event = "VeryLazy",
-  opts = {},
+  opts = {
+    api = {
+      provider = "anthropic",  -- or "openai", "cursor", "openai_compat"
+    }
+  },
   keys = {
     { "<leader>ae", mode = "v", desc = "AI: Explain selection" },
     { "<leader>aE", mode = "n", desc = "AI: Explain buffer" },
@@ -61,17 +73,19 @@ For testing local changes:
 
 ```lua
 return {
-  "tungsheng/nvim-cursor",
-  dir = "~/path/to/nvim-cursor",  -- Your local clone path
+  "tungsheng/fern",
+  dir = "~/path/to/fern",  -- Your local clone path
   event = "VeryLazy",
-  opts = {},
+  opts = {
+    api = { provider = "anthropic" }
+  },
 }
 ```
 
 **Clone for development:**
 ```bash
-git clone https://github.com/tungsheng/nvim-cursor.git
-cd nvim-cursor
+git clone https://github.com/tungsheng/fern.git
+cd fern
 ```
 
 ## Step 4: Restart Neovim
@@ -84,19 +98,20 @@ nvim
 
 Run health check:
 ```vim
-:checkhealth nvim-cursor
+:checkhealth fern
 ```
 
 Expected output:
 ```
-nvim-cursor: OK
+fern: OK
 
 - OK Neovim version: 0.9.5
 - OK curl found: curl 8.4.0
-- OK CURSOR_API_KEY environment variable is set
+- OK Provider: anthropic
+- OK ANTHROPIC_API_KEY environment variable is set
 - OK API connection successful (status: 200)
 - OK Plugin configuration loaded
-- INFO Model: gpt-4
+- INFO Model: claude-sonnet-4-20250514
 - INFO Timeout: 30000ms
 ```
 
@@ -161,8 +176,9 @@ opts = {
 ```lua
 opts = {
   api = {
-    cursor = {
-      model = "gpt-4-turbo",
+    provider = "anthropic",
+    anthropic = {
+      model = "claude-opus-4-20250514",
     }
   }
 }
@@ -186,14 +202,14 @@ opts = {
 ### "API key not found"
 
 ```bash
-# Check if set
-echo $CURSOR_API_KEY
+# Check if set (example for Anthropic)
+echo $ANTHROPIC_API_KEY
 
 # If empty, set it
-export CURSOR_API_KEY="your_key"
+export ANTHROPIC_API_KEY="your_key"
 
 # Add to shell profile for persistence
-echo 'export CURSOR_API_KEY="your_key"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="your_key"' >> ~/.zshrc
 ```
 
 ### Plugin not loading
@@ -203,7 +219,7 @@ echo 'export CURSOR_API_KEY="your_key"' >> ~/.zshrc
 :Lazy
 
 # Force load
-:Lazy load nvim-cursor
+:Lazy load fern
 
 # Check for errors
 :messages
@@ -213,10 +229,10 @@ echo 'export CURSOR_API_KEY="your_key"' >> ~/.zshrc
 
 ```vim
 # Manually open
-:CursorToggle
+:FernToggle
 
 # Or use command
-:lua require("nvim-cursor.ui.output").open()
+:lua require("fern.ui.output").open()
 ```
 
 ### Request timeout
@@ -225,7 +241,8 @@ echo 'export CURSOR_API_KEY="your_key"' >> ~/.zshrc
 -- Increase timeout in config
 opts = {
   api = {
-    cursor = {
+    provider = "anthropic",
+    anthropic = {
       timeout = 60000,  -- 60 seconds
     }
   }
@@ -308,11 +325,11 @@ end
 
 ## Support
 
-- **Health check**: `:checkhealth nvim-cursor`
-- **View logs**: `~/.cache/nvim/nvim-cursor.log`
+- **Health check**: `:checkhealth fern`
+- **View logs**: `~/.cache/nvim/fern.log`
 - **Debug mode**: Set `log.level = "debug"` in config
-- **Documentation**: See `README.md` and `doc/nvim-cursor.txt`
-- **Issues**: File on GitHub (when public)
+- **Documentation**: See `README.md` and `doc/fern.txt`
+- **Issues**: [github.com/tungsheng/fern/issues](https://github.com/tungsheng/fern/issues)
 
 ## You're Ready!
 

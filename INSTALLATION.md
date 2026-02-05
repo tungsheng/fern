@@ -1,8 +1,8 @@
 # Installation Guide
 
-Complete installation instructions for nvim-cursor.
+Complete installation instructions for fern.
 
-**Repository:** [github.com/tungsheng/nvim-cursor](https://github.com/tungsheng/nvim-cursor)
+**Repository:** [github.com/tungsheng/fern](https://github.com/tungsheng/fern)
 
 ---
 
@@ -10,7 +10,7 @@ Complete installation instructions for nvim-cursor.
 
 - **Neovim:** >= 0.9.0
 - **curl:** For API requests
-- **Cursor API Key:** Required for AI features
+- **API Key:** Required for your chosen provider (Anthropic, OpenAI, Cursor, or optional for OpenAI-compatible)
 
 ---
 
@@ -20,11 +20,11 @@ Complete installation instructions for nvim-cursor.
 
 Add to your Neovim configuration:
 
-**File:** `~/.config/nvim/lua/plugins/nvim-cursor.lua`
+**File:** `~/.config/nvim/lua/plugins/fern.lua`
 
 ```lua
 return {
-  "tungsheng/nvim-cursor",
+  "tungsheng/fern",
   event = "VeryLazy",
   opts = {},
   keys = {
@@ -46,8 +46,8 @@ return {
 **Quick Setup with Script:**
 ```bash
 # Clone the repository
-git clone https://github.com/tungsheng/nvim-cursor.git
-cd nvim-cursor
+git clone https://github.com/tungsheng/fern.git
+cd fern
 
 # Run the setup script
 ./setup-api-key.sh
@@ -56,13 +56,13 @@ cd nvim-cursor
 **Or Manual Setup:**
 ```bash
 # Add to your shell config (~/.zshrc or ~/.bashrc)
-export CURSOR_API_KEY="your_api_key_here"
+export ANTHROPIC_API_KEY="your_api_key_here"
 
 # Reload shell
 source ~/.zshrc  # or source ~/.bashrc
 
 # Verify
-echo $CURSOR_API_KEY
+echo $ANTHROPIC_API_KEY
 ```
 
 ### 3. Restart Neovim
@@ -74,7 +74,7 @@ nvim
 ### 4. Verify Installation
 
 ```vim
-:checkhealth nvim-cursor
+:checkhealth fern
 ```
 
 ---
@@ -85,9 +85,9 @@ nvim
 
 ```lua
 use {
-  "tungsheng/nvim-cursor",
+  "tungsheng/fern",
   config = function()
-    require("nvim-cursor").setup()
+    require("fern").setup()
   end
 }
 ```
@@ -95,10 +95,10 @@ use {
 ### Using vim-plug
 
 ```vim
-Plug 'tungsheng/nvim-cursor'
+Plug 'tungsheng/fern'
 
 lua << EOF
-require("nvim-cursor").setup()
+require("fern").setup()
 EOF
 ```
 
@@ -106,10 +106,10 @@ EOF
 
 ```bash
 # Clone the repository
-git clone https://github.com/tungsheng/nvim-cursor.git ~/.local/share/nvim/site/pack/plugins/start/nvim-cursor
+git clone https://github.com/tungsheng/fern.git ~/.local/share/nvim/site/pack/plugins/start/fern
 
 # In your init.lua
-require("nvim-cursor").setup()
+require("fern").setup()
 ```
 
 ---
@@ -120,7 +120,7 @@ require("nvim-cursor").setup()
 
 ```lua
 {
-  "tungsheng/nvim-cursor",
+  "tungsheng/fern",
   opts = {
     api = {
       cursor = {
@@ -142,9 +142,9 @@ require("nvim-cursor").setup()
 
 ```lua
 {
-  "tungsheng/nvim-cursor",
+  "tungsheng/fern",
   config = function()
-    require("nvim-cursor").setup({
+    require("fern").setup({
       api = {
         cursor = {
           model = "gpt-4-turbo",
@@ -191,7 +191,7 @@ touch ~/.env.secrets
 chmod 600 ~/.env.secrets
 
 # Add API key
-echo 'export CURSOR_API_KEY="your_api_key_here"' >> ~/.env.secrets
+echo 'export ANTHROPIC_API_KEY="your_api_key_here"' >> ~/.env.secrets
 
 # Source from shell config
 echo '[ -f ~/.env.secrets ] && source ~/.env.secrets' >> ~/.zshrc
@@ -200,7 +200,7 @@ echo '[ -f ~/.env.secrets ] && source ~/.env.secrets' >> ~/.zshrc
 source ~/.zshrc
 
 # Verify
-echo $CURSOR_API_KEY
+echo $ANTHROPIC_API_KEY
 ```
 
 **Benefits:**
@@ -213,11 +213,11 @@ echo $CURSOR_API_KEY
 
 ```bash
 # For zsh (macOS default)
-echo 'export CURSOR_API_KEY="your_api_key"' >> ~/.zshrc
+echo 'export ANTHROPIC_API_KEY="your_api_key"' >> ~/.zshrc
 source ~/.zshrc
 
 # For bash (Linux default)
-echo 'export CURSOR_API_KEY="your_api_key"' >> ~/.bashrc
+echo 'export ANTHROPIC_API_KEY="your_api_key"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -225,7 +225,7 @@ source ~/.bashrc
 
 ```bash
 # Only for current terminal session
-export CURSOR_API_KEY="your_api_key"
+export ANTHROPIC_API_KEY="your_api_key"
 ```
 
 ---
@@ -236,13 +236,13 @@ For contributing or testing local changes:
 
 ```bash
 # Clone the repository
-git clone https://github.com/tungsheng/nvim-cursor.git
-cd nvim-cursor
+git clone https://github.com/tungsheng/fern.git
+cd fern
 
 # In your Neovim config, use local path
 {
-  "tungsheng/nvim-cursor",
-  dir = "~/path/to/nvim-cursor",  -- Your local clone
+  "tungsheng/fern",
+  dir = "~/path/to/fern",  -- Your local clone
   dev = true,
   opts = {}
 }
@@ -255,13 +255,13 @@ cd nvim-cursor
 ### Check Health
 
 ```vim
-:checkhealth nvim-cursor
+:checkhealth fern
 ```
 
 Expected output:
 - ✓ Neovim version 0.9+
 - ✓ curl found
-- ✓ CURSOR_API_KEY is set
+- ✓ ANTHROPIC_API_KEY is set
 - ✓ API connection successful
 - ✓ Plugin configuration loaded
 - ✓ Log directory exists
@@ -276,7 +276,7 @@ Expected output:
 
 ```vim
 " Open help
-:help nvim-cursor
+:help fern
 
 " Try a command
 :CursorExplain
@@ -293,20 +293,20 @@ Expected output:
 
 ```vim
 " Check if loaded
-:lua =vim.g.loaded_nvim_cursor
+:lua =vim.g.loaded_fern
 
 " Force load
-:Lazy load nvim-cursor
+:Lazy load fern
 ```
 
 ### API Key Not Found
 
 ```bash
 # Check if set
-echo $CURSOR_API_KEY
+echo $ANTHROPIC_API_KEY
 
 # If empty, add to shell config
-export CURSOR_API_KEY="your_key"
+export ANTHROPIC_API_KEY="your_key"
 
 # Restart Neovim
 ```
@@ -355,10 +355,10 @@ opts = {
 
 ```bash
 # Remove log file
-rm ~/.cache/nvim/nvim-cursor.log
+rm ~/.cache/nvim/fern.log
 
 # Remove API key (if using separate file)
-# Edit ~/.env.secrets and remove the CURSOR_API_KEY line
+# Edit ~/.env.secrets and remove the ANTHROPIC_API_KEY line
 
 # Or remove from shell config
 # Edit ~/.zshrc or ~/.bashrc and remove the export line
@@ -369,8 +369,8 @@ rm ~/.cache/nvim/nvim-cursor.log
 ## Getting Help
 
 - **Documentation:** See [README.md](README.md), [QUICKSTART.md](QUICKSTART.md)
-- **Issues:** [github.com/tungsheng/nvim-cursor/issues](https://github.com/tungsheng/nvim-cursor/issues)
-- **Discussions:** [github.com/tungsheng/nvim-cursor/discussions](https://github.com/tungsheng/nvim-cursor/discussions)
+- **Issues:** [github.com/tungsheng/fern/issues](https://github.com/tungsheng/fern/issues)
+- **Discussions:** [github.com/tungsheng/fern/discussions](https://github.com/tungsheng/fern/discussions)
 
 ---
 
@@ -388,12 +388,12 @@ After installation:
 
 ## Contributing
 
-Want to help improve nvim-cursor?
+Want to help improve fern?
 
 ```bash
 # Fork and clone
-git clone https://github.com/YOUR_USERNAME/nvim-cursor.git
-cd nvim-cursor
+git clone https://github.com/YOUR_USERNAME/fern.git
+cd fern
 
 # Make changes and test
 nvim --cmd "luafile test-manual.lua"
@@ -402,4 +402,4 @@ nvim --cmd "luafile test-manual.lua"
 # See README.md for contribution guidelines
 ```
 
-**Repository:** [github.com/tungsheng/nvim-cursor](https://github.com/tungsheng/nvim-cursor)
+**Repository:** [github.com/tungsheng/fern](https://github.com/tungsheng/fern)

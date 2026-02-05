@@ -1,14 +1,14 @@
--- nvim-cursor: AI-powered code assistance for Neovim
+-- fern: AI-powered code assistance for Neovim
 -- Automatically loaded by Neovim's plugin system
 
-if vim.g.loaded_nvim_cursor then
+if vim.g.loaded_fern then
   return
 end
-vim.g.loaded_nvim_cursor = 1
+vim.g.loaded_fern = 1
 
 -- Don't initialize if not running Neovim
 if vim.fn.has("nvim-0.9.0") ~= 1 then
-  vim.notify("nvim-cursor requires Neovim >= 0.9.0", vim.log.levels.ERROR)
+  vim.notify("fern requires Neovim >= 0.9.0", vim.log.levels.ERROR)
   return
 end
 

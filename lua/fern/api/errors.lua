@@ -4,7 +4,7 @@ M.ErrorTypes = {
   AUTH = {
     code = 401,
     message = "Invalid API key",
-    suggestion = "Set CURSOR_API_KEY environment variable: export CURSOR_API_KEY=your_key_here",
+    suggestion = "Set the appropriate API key environment variable for your provider. Run :checkhealth fern for details.",
     retry = false
   },
   RATE_LIMIT = {
@@ -22,7 +22,7 @@ M.ErrorTypes = {
   SERVER = {
     code = 500,
     message = "Server error",
-    suggestion = "Cursor API may be experiencing issues. Try again later.",
+    suggestion = "The API may be experiencing issues. Try again later.",
     retry = true
   },
   NETWORK = {
@@ -40,7 +40,7 @@ M.ErrorTypes = {
   INVALID_CONFIG = {
     code = 0,
     message = "Invalid configuration",
-    suggestion = "Check your nvim-cursor configuration. Run :checkhealth nvim-cursor for diagnostics.",
+    suggestion = "Check your fern configuration. Run :checkhealth fern for diagnostics.",
     retry = false
   }
 }
@@ -70,10 +70,10 @@ function M.from_http_error(err)
       return M.new('SERVER', err.message or err.body)
     end
   end
-  
+
   -- Check for common error messages
   local err_str = tostring(err)
-  
+
   if err_str:match("timeout") or err_str:match("timed out") then
     return M.new('TIMEOUT', err_str)
   elseif err_str:match("connection") or err_str:match("network") then
@@ -83,29 +83,29 @@ function M.from_http_error(err)
   elseif err_str:match("unauthorized") or err_str:match("forbidden") then
     return M.new('AUTH', err_str)
   end
-  
+
   return M.new('NETWORK', err_str)
 end
 
 function M.format_for_user(err)
   local parts = {
-    "❌ **Error: " .. err.message .. "**",
+    "**Error: " .. err.message .. "**",
     ""
   }
-  
+
   if err.details then
     table.insert(parts, "Details: " .. tostring(err.details))
     table.insert(parts, "")
   end
-  
+
   if err.suggestion then
-    table.insert(parts, "💡 **Suggestion:**")
+    table.insert(parts, "**Suggestion:**")
     table.insert(parts, err.suggestion)
   end
-  
+
   table.insert(parts, "")
-  table.insert(parts, "For more help, run: `:checkhealth nvim-cursor`")
-  
+  table.insert(parts, "For more help, run: `:checkhealth fern`")
+
   return table.concat(parts, "\n")
 end
 
@@ -113,11 +113,11 @@ function M.should_retry(err, attempt, max_retries)
   if not err.retry then
     return false
   end
-  
+
   if attempt >= max_retries then
     return false
   end
-  
+
   return true
 end
 

@@ -1,4 +1,4 @@
-# nvim-cursor Keymaps Reference
+# fern Keymaps Reference
 
 Complete reference for all default keymaps and their usage.
 
@@ -181,7 +181,7 @@ Code:
 Override default keymaps in your configuration:
 
 ```lua
-require("nvim-cursor").setup({
+require("fern").setup({
   keymaps = {
     toggle_output = "<leader>ao",      -- Change from <leader>at
     custom_prompt = "<leader>ap",       -- Change from <leader>ac
@@ -198,7 +198,7 @@ require("nvim-cursor").setup({
 Set keymaps to empty string to disable:
 
 ```lua
-require("nvim-cursor").setup({
+require("fern").setup({
   keymaps = {
     refactor_code = "", -- Disables <leader>ar
   },
@@ -209,7 +209,7 @@ Then map manually:
 
 ```lua
 vim.keymap.set("v", "<leader>rf", function()
-  require("nvim-cursor.actions").refactor_code()
+  require("fern.actions").refactor_code()
 end, { desc = "Refactor with AI" })
 ```
 
@@ -242,7 +242,7 @@ LazyVim users get automatic integration with the `keys` spec:
 
 ```lua
 {
-  "yourtungsheng/nvim-cursor",
+  "yourtungsheng/fern",
   keys = {
     { "<leader>ae", mode = "v", desc = "AI: Explain selection" },
     { "<leader>aE", mode = "n", desc = "AI: Explain buffer" },
@@ -297,11 +297,11 @@ All keymaps have corresponding Ex commands:
 
 | Keymap | Command | Equivalent |
 |--------|---------|------------|
-| `<leader>ae` | `:CursorExplain` | Explain selection |
-| `<leader>ad` | `:CursorDoc` | Generate docs |
-| `<leader>ar` | `:CursorRefactor` | Refactor suggestions |
-| `<leader>ac` | `:CursorPrompt` | Custom prompt |
-| `<leader>at` | `:CursorToggle` | Toggle output |
+| `<leader>ae` | `:FernExplain` | Explain selection |
+| `<leader>ad` | `:FernDoc` | Generate docs |
+| `<leader>ar` | `:FernRefactor` | Refactor suggestions |
+| `<leader>ac` | `:FernPrompt` | Custom prompt |
+| `<leader>at` | `:FernToggle` | Toggle output |
 
 Use commands for:
 - Scripting and automation

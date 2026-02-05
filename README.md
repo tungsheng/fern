@@ -1,33 +1,34 @@
-# nvim-cursor
+# fern
 
-[![GitHub](https://img.shields.io/badge/GitHub-tungsheng%2Fnvim--cursor-blue?logo=github)](https://github.com/tungsheng/nvim-cursor)
-[![Version](https://img.shields.io/badge/version-v0.1.1-blue.svg)](VERSION)
+[![GitHub](https://img.shields.io/badge/GitHub-tungsheng%2Ffern-blue?logo=github)](https://github.com/tungsheng/fern)
+[![Version](https://img.shields.io/badge/version-v0.2.0-blue.svg)](VERSION)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Neovim](https://img.shields.io/badge/Neovim-0.9%2B-brightgreen?logo=neovim)](https://neovim.io)
 
-AI-powered code assistance directly in Neovim using the Cursor API.
+AI-powered code assistance directly in Neovim with multi-provider LLM support.
 
-**Repository:** [github.com/tungsheng/nvim-cursor](https://github.com/tungsheng/nvim-cursor)
+**Repository:** [github.com/tungsheng/fern](https://github.com/tungsheng/fern)
 
 ## Features
 
-- ✨ **Streaming responses** - See AI output in real-time without blocking your editor
-- 🎯 **Context-aware** - Automatically includes file path, line numbers, and surrounding code
-- 🔧 **Predefined actions** - Explain, document, refactor, and fix bugs with dedicated commands
-- 💬 **Custom prompts** - Ask anything with visual selection or full buffer context
-- 📜 **Response history** - Navigate through previous AI responses with `[a` and `]a`
-- ⚡ **Async by default** - Never blocks your editor, cancel anytime with `<C-c>`
-- 🔐 **Secure** - API key via environment variable only, with automatic warnings
-- 🩺 **Health check** - Built-in diagnostics with `:checkhealth nvim-cursor`
-- 📊 **Progress indicators** - Visual feedback during streaming with spinner animation
-- 🔄 **Auto-retry** - Automatic retry with exponential backoff for transient errors
-- 📝 **Structured logging** - Debug mode with sensitive data redaction
+- **Multi-provider** - Cursor, OpenAI, Anthropic (Claude), and OpenAI-compatible (Ollama, Groq, Together)
+- **Streaming responses** - See AI output in real-time without blocking your editor
+- **Context-aware** - Automatically includes file path, line numbers, and surrounding code
+- **Predefined actions** - Explain, document, refactor, and fix bugs with dedicated commands
+- **Custom prompts** - Ask anything with visual selection or full buffer context
+- **Response history** - Navigate through previous AI responses with `[a` and `]a`
+- **Async by default** - Never blocks your editor, cancel anytime with `<C-c>`
+- **Secure** - API key via environment variable only, with automatic warnings
+- **Health check** - Built-in diagnostics with `:checkhealth fern`
+- **Progress indicators** - Visual feedback during streaming with spinner animation
+- **Auto-retry** - Automatic retry with exponential backoff for transient errors
+- **Structured logging** - Debug mode with sensitive data redaction
 
 ## Requirements
 
 - Neovim 0.9+
 - curl
-- Cursor API key ([get one here](https://cursor.sh))
+- API key for your chosen provider
 
 ## Installation
 
@@ -35,9 +36,13 @@ AI-powered code assistance directly in Neovim using the Cursor API.
 
 ```lua
 {
-  "tungsheng/nvim-cursor",
+  "tungsheng/fern",
   event = "VeryLazy",
-  opts = {},
+  opts = {
+    api = {
+      provider = "anthropic",  -- or "cursor", "openai", "openai_compat"
+    }
+  },
   keys = {
     { "<leader>ae", mode = "v", desc = "AI: Explain selection" },
     { "<leader>aE", mode = "n", desc = "AI: Explain buffer" },
@@ -56,9 +61,11 @@ AI-powered code assistance directly in Neovim using the Cursor API.
 
 ```lua
 use {
-  "tungsheng/nvim-cursor",
+  "tungsheng/fern",
   config = function()
-    require("nvim-cursor").setup()
+    require("fern").setup({
+      api = { provider = "anthropic" }
+    })
   end
 }
 ```
@@ -70,25 +77,27 @@ use {
 **Quick Setup:**
 
 ```bash
-# Run the interactive setup script
 ./setup-api-key.sh
 ```
 
 **Manual Setup:**
 
 ```bash
-# Create and secure secrets file
-touch ~/.env.secrets
-chmod 600 ~/.env.secrets
-echo 'export CURSOR_API_KEY="your_api_key_here"' >> ~/.env.secrets
+# For Anthropic (Claude)
+export ANTHROPIC_API_KEY="your_key_here"
 
-# Source from shell config (zsh/bash)
-echo '[ -f ~/.env.secrets ] && source ~/.env.secrets' >> ~/.zshrc
+# For OpenAI
+export OPENAI_API_KEY="your_key_here"
+
+# For Cursor
+export CURSOR_API_KEY="your_key_here"
+
+# Add to shell config
+echo 'export ANTHROPIC_API_KEY="your_key"' >> ~/.zshrc
 source ~/.zshrc
 
 # Verify
-echo $CURSOR_API_KEY
-nvim -c "checkhealth nvim-cursor" -c "qa"
+nvim -c "checkhealth fern" -c "qa"
 ```
 
 For detailed security guidance, see [SECURITY.md](SECURITY.md).
@@ -105,21 +114,23 @@ For detailed usage examples, see [QUICKSTART.md](QUICKSTART.md).
 
 ## Configuration
 
-Default configuration (customize as needed):
-
 ```lua
-require("nvim-cursor").setup({
+require("fern").setup({
   api = {
-    cursor = {
-      model = "gpt-4",
-      timeout = 30000,
-      max_retries = 3
-    }
+    provider = "anthropic",  -- "cursor" | "openai" | "anthropic" | "openai_compat"
+    cursor    = { model = "gpt-4", timeout = 30000 },
+    openai    = { model = "gpt-4o", timeout = 30000 },
+    anthropic = { model = "claude-sonnet-4-20250514", max_tokens = 4096 },
+    openai_compat = {
+      endpoint = "http://localhost:11434/v1/chat/completions",
+      model = "llama3",
+      timeout = 60000,
+    },
   },
   ui = {
     output = {
       position = "right",  -- "right", "bottom", "left"
-      size = 50,           -- percentage
+      size = 50,
       auto_scroll = true
     }
   },
@@ -135,17 +146,17 @@ require("nvim-cursor").setup({
 **Customize keymaps:**
 
 ```lua
-require("nvim-cursor").setup({
+require("fern").setup({
   keymaps = { enabled = false }
 })
-local actions = require('nvim-cursor.actions')
+local actions = require('fern.actions')
 vim.keymap.set('v', '<leader>x', actions.explain_selection)
 ```
 
 **Add custom actions:**
 
 ```lua
-require("nvim-cursor").setup({
+require("fern").setup({
   custom_actions = {
     add_tests = {
       keymap = "<leader>aT",
@@ -159,20 +170,31 @@ require("nvim-cursor").setup({
 ## Commands
 
 All actions available as commands:
-- `:CursorExplain`, `:CursorDoc`, `:CursorRefactor`, `:CursorFixBug`
-- `:CursorPrompt` - Custom prompt
-- `:CursorToggle` - Toggle output pane
-- `:CursorCancel` - Cancel request
-- `:CursorHistoryClear` - Clear history
-- `:CursorVersion` - Show plugin version
-- `:checkhealth nvim-cursor` - Run diagnostics
+- `:FernExplain`, `:FernDoc`, `:FernRefactor`, `:FernFixBug`
+- `:FernPrompt` - Custom prompt
+- `:FernToggle` - Toggle output pane
+- `:FernCancel` - Cancel request
+- `:FernHistoryClear` - Clear history
+- `:FernVersion` - Show plugin version
+- `:checkhealth fern` - Run diagnostics
+
+## Supported Providers
+
+| Provider | Config Key | Env Variable | Default Model |
+|----------|-----------|--------------|---------------|
+| Cursor | `cursor` | `CURSOR_API_KEY` | gpt-4 |
+| OpenAI | `openai` | `OPENAI_API_KEY` | gpt-4o |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` | claude-sonnet-4-20250514 |
+| OpenAI-compat | `openai_compat` | `OPENAI_COMPAT_API_KEY` (optional) | llama3 |
+
+The `openai_compat` provider works with any OpenAI-compatible API: Ollama, Groq, Together, vLLM, LM Studio, etc.
 
 ## Troubleshooting
 
 Run health check to diagnose issues:
 
 ```vim
-:checkhealth nvim-cursor
+:checkhealth fern
 ```
 
 **Enable debug logging:**
@@ -181,81 +203,60 @@ Run health check to diagnose issues:
 opts = { log = { level = "debug" } }
 ```
 
-View logs: `~/.cache/nvim/nvim-cursor.log`
+View logs: `~/.cache/nvim/fern.log`
 
 **Common fixes:**
-- API key not found → Run `./setup-api-key.sh` or check `echo $CURSOR_API_KEY`
-- Request timeout → Increase `api.cursor.timeout = 60000` or check internet
-- Output pane hidden → Press `<leader>at` to toggle
-- Stuck request → Press `<C-c>` to cancel
-
-## Comparison
-
-| Feature              | nvim-cursor | copilot.vim | ChatGPT.nvim |
-| -------------------- | ---------- | ----------- | ------------ |
-| Streaming responses  | ✅          | ❌           | ✅            |
-| Context-aware        | ✅          | ✅           | ⚠️ Manual    |
-| Custom prompts       | ✅          | ❌           | ✅            |
-| Request cancellation | ✅          | N/A         | ❌            |
-| Response history     | ✅          | N/A         | ❌            |
-| Health check         | ✅          | ❌           | ❌            |
-| Auto-retry           | ✅          | N/A         | ❌            |
-| Cursor API           | ✅          | ❌           | ❌            |
+- API key not found - Run `./setup-api-key.sh` or check your provider's env var
+- Request timeout - Increase timeout in provider config
+- Output pane hidden - Press `<leader>at` to toggle
+- Stuck request - Press `<C-c>` to cancel
 
 ## Security
 
-⚠️ **NEVER commit API keys to version control**
+**NEVER commit API keys to version control**
 
 - Store keys in `~/.env.secrets` with `chmod 600` permissions
 - Add `.env.secrets` to `.gitignore` if tracking dotfiles
 - Plugin automatically redacts sensitive data from logs
-- Run `:checkhealth nvim-cursor` to validate security setup
+- Run `:checkhealth fern` to validate security setup
 
-For comprehensive security guidance including password manager integration, see [SECURITY.md](SECURITY.md).
+For comprehensive security guidance, see [SECURITY.md](SECURITY.md).
 
 ## Architecture
 
 ```
-User Action → Context Manager → API Client → Cursor API
-                                      ↓
-                               Stream Handler
-                                      ↓
-                    Output Pane (History + Progress)
+User Action -> Context Manager -> API Client -> Provider Dispatch
+                                                   |
+                               Cursor / OpenAI / Anthropic / OpenAI-compat
+                                                   |
+                                            Stream Handler
+                                                   |
+                                 Output Pane (History + Progress)
 ```
-
-Components: Context extraction, API client with retry logic, SSE stream handler, output pane with history, structured logging with redaction.
 
 ## Contributing
 
 Contributions welcome! Areas for improvement:
-- Add AI providers (OpenAI, Anthropic, etc.)
-- Extend predefined actions
-- Enhance UI components
-- Add features (diff view, code application)
+- Additional AI providers
+- Enhanced UI components
+- Diff view and code application
 - Report bugs and improve docs
 
 **Development:**
 
 ```bash
-git clone https://github.com/tungsheng/nvim-cursor.git
-cd nvim-cursor
+git clone https://github.com/tungsheng/fern.git
+cd fern
 
 # Test locally
 nvim --cmd "luafile test-manual.lua"
 
 # Or in your config:
-{ "tungsheng/nvim-cursor", dir = "~/path/to/nvim-cursor", opts = {} }
+{ "tungsheng/fern", dir = "~/path/to/fern", opts = {} }
 ```
 
-Submit issues and PRs at [github.com/tungsheng/nvim-cursor](https://github.com/tungsheng/nvim-cursor)
+Submit issues and PRs at [github.com/tungsheng/fern](https://github.com/tungsheng/fern)
 
 ## License
 
 MIT License - see LICENSE file for details.
-
-## Acknowledgments
-
-Built for the Neovim community with inspiration from:
-- LazyVim conventions
-- Modern AI coding assistants
-- Neovim plugin best practices

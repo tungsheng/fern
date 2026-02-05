@@ -10,10 +10,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🔩 Planned
 - Diff view for refactoring suggestions with apply option
 - Telescope integration for history browsing
-- Support for additional AI providers (OpenAI, Anthropic)
-- Code action integration (Neovim LSP)
 - Multi-file context support
 - Conversation mode (multi-turn chat)
+
+## [0.2.0] - 2026-02-04
+
+### 📈 Features/Enhancements
+
+#### Multi-Provider Support
+- [Providers] Add support for OpenAI, Anthropic (Claude), and OpenAI-compatible providers
+- [Providers] Implement provider dispatch system with unified interface
+- [API] Add OpenAI provider with gpt-4o default model
+- [API] Add Anthropic provider with claude-sonnet-4-20250514 default model
+- [API] Add OpenAI-compatible provider for Ollama, Groq, Together, vLLM, LM Studio
+- [Config] Add provider selection via `api.provider` config option
+- [API] Create shared `openai_base` module for OpenAI and compatible providers
+
+#### Plugin Rename
+- [Core] Rename plugin from nvim-cursor to fern
+- [Commands] Rename all commands from `:Cursor*` to `:Fern*`
+- [Modules] Update all Lua module paths from `nvim-cursor.*` to `fern.*`
+- [Documentation] Update all documentation to reflect new plugin name
+- [Files] Update README, CHANGELOG, and all markdown documentation
+
+#### Enhanced Health Check
+- [Health] Add provider-aware health check for active provider
+- [Health] Display configured provider and model in health output
+- [Health] Validate API key for active provider only
+- [Health] Test API connectivity for configured provider
+
+#### Security
+- [Setup] Update `setup-api-key.sh` to support all four providers interactively
+- [Setup] Add provider-specific configuration hints after API key setup
+- [Documentation] Update security documentation for multi-provider setup
+
+### 📝 Documentation
+
+- Update VERSION to v0.2.0
+- Update all references from nvim-cursor to fern across documentation
+- Update command references from :Cursor* to :Fern*
+- Add provider comparison table to README
+- Update architecture diagram to show provider dispatch
+- Update all `require()` paths in examples from nvim-cursor to fern
+- Update GitHub repository URLs from nvim-cursor to fern
+- Update health check command from `:checkhealth nvim-cursor` to `:checkhealth fern`
+- Update log file path from `nvim-cursor.log` to `fern.log`
+
+### 🔩 Project Structure
+
+```
+fern/
+├── lua/fern/
+│   ├── init.lua
+│   ├── config.lua
+│   ├── logger.lua
+│   ├── history.lua
+│   ├── health.lua
+│   ├── context.lua
+│   ├── actions.lua
+│   ├── keymaps.lua
+│   ├── api/
+│   │   ├── client.lua
+│   │   ├── cursor.lua
+│   │   ├── openai.lua           # New
+│   │   ├── anthropic.lua        # New
+│   │   ├── openai_compat.lua    # New
+│   │   ├── openai_base.lua      # New shared module
+│   │   ├── stream.lua
+│   │   └── errors.lua
+│   └── ui/
+│       ├── input.lua
+│       ├── output.lua
+│       └── progress.lua
+├── doc/fern.txt              # Updated
+├── plugin/fern.lua           # Renamed from nvim-cursor.lua
+├── VERSION                   # Updated to v0.2.0
+└── Documentation files       # All updated with new name
+```
 
 ## [0.1.1] - 2024-02-04
 
@@ -133,37 +206,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add example file (`example.lua`) for interactive testing
 - Create comprehensive testing guide in TESTING.md
 - Include health check system for automated validation
-
-### 📦 Project Structure
-
-```
-nvim-cursor/
-├── lua/nvim-cursor/
-│   ├── init.lua           # Main entry point
-│   ├── config.lua         # Configuration management
-│   ├── logger.lua         # Structured logging
-│   ├── history.lua        # Response history
-│   ├── health.lua         # Health check system
-│   ├── context.lua        # Context extraction
-│   ├── actions.lua        # Action definitions
-│   ├── keymaps.lua        # Keymap registration
-│   ├── api/
-│   │   ├── client.lua    # API client interface
-│   │   ├── cursor.lua    # Cursor API implementation
-│   │   ├── stream.lua    # SSE stream parser
-│   │   └── errors.lua    # Error types and handling
-│   └── ui/
-│       ├── input.lua     # Floating input window
-│       ├── output.lua    # Split pane output
-│       └── progress.lua  # Progress indicators
-├── doc/nvim-cursor.txt     # Vim help documentation
-├── plugin/nvim-cursor.lua  # Plugin detection
-├── README.md              # Main documentation
-├── KEYMAPS.md            # Keymap reference
-├── TESTING.md            # Testing guide
-├── SECURITY.md           # Security guide
-└── QUICKSTART.md         # Quick start guide
-```
 
 ### 🎯 Requirements
 

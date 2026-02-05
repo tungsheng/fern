@@ -1,35 +1,40 @@
-# Testing Guide for nvim-cursor
+# Testing Guide for fern
 
-This guide helps you test the nvim-cursor plugin after installation.
+This guide helps you test the fern plugin after installation.
 
-**Repository:** [github.com/tungsheng/nvim-cursor](https://github.com/tungsheng/nvim-cursor)
+**Repository:** [github.com/tungsheng/fern](https://github.com/tungsheng/fern)
 
 ## Prerequisites
 
 1. **Set API Key**
    ```bash
-   export CURSOR_API_KEY="your_api_key_here"
+   # For your chosen provider:
+   export ANTHROPIC_API_KEY="your_api_key_here"
+   # or: export OPENAI_API_KEY="your_api_key_here"
+   # or: export CURSOR_API_KEY="your_api_key_here"
    ```
-   
+
    Verify it's set:
    ```bash
-   echo $CURSOR_API_KEY
+   echo $ANTHROPIC_API_KEY  # or your provider's key
    ```
 
 2. **Install the Plugin**
    Add to your Neovim config (lazy.nvim example):
    ```lua
    {
-     "tungsheng/nvim-cursor",
-     dir = "~/path/to/nvim-cursor",  -- Use local path for testing
+     "tungsheng/fern",
+     dir = "~/path/to/fern",  -- Use local path for testing
      event = "VeryLazy",
-     opts = {},
+     opts = {
+       api = { provider = "anthropic" }  -- or your chosen provider
+     },
    }
    ```
 
    Or clone from GitHub:
    ```bash
-   git clone https://github.com/tungsheng/nvim-cursor.git
+   git clone https://github.com/tungsheng/fern.git
    ```
 
 ## Step 1: Health Check
@@ -37,13 +42,13 @@ This guide helps you test the nvim-cursor plugin after installation.
 Run the built-in health check to verify everything is configured correctly:
 
 ```vim
-:checkhealth nvim-cursor
+:checkhealth fern
 ```
 
 Expected output should show:
 - ✓ Neovim version 0.9+
 - ✓ curl found
-- ✓ CURSOR_API_KEY is set
+- ✓ API key is set for active provider
 - ✓ API connection successful (if internet available)
 - ✓ Plugin configuration loaded
 - ✓ Log directory exists
@@ -183,7 +188,7 @@ After making several requests:
 ### Clear History
 
 ```vim
-:CursorHistoryClear
+:FernHistoryClear
 ```
 
 **Expected behavior:**
@@ -196,7 +201,7 @@ After making several requests:
 
 1. Temporarily unset API key:
    ```bash
-   unset CURSOR_API_KEY
+   unset ANTHROPIC_API_KEY  # or your provider's key
    ```
 2. Restart Neovim
 3. Try any action
@@ -233,7 +238,7 @@ opts = {
 ### View Logs
 
 ```bash
-tail -f ~/.cache/nvim/nvim-cursor.log
+tail -f ~/.cache/nvim/fern.log
 ```
 
 **Expected behavior:**
@@ -247,19 +252,20 @@ tail -f ~/.cache/nvim/nvim-cursor.log
 ### Test Custom Configuration
 
 ```lua
-require("nvim-cursor").setup({
+require("fern").setup({
+  api = {
+    provider = "anthropic",
+    anthropic = {
+      model = "claude-sonnet-4-20250514",
+      timeout = 60000,  -- Increase timeout
+    }
+  },
   ui = {
     output = {
       position = "bottom",  -- Change position
       size = 30,
     }
   },
-  api = {
-    cursor = {
-      model = "gpt-4-turbo",  -- Change model
-      timeout = 60000,  -- Increase timeout
-    }
-  }
 })
 ```
 
@@ -330,16 +336,16 @@ Check Lazy loading:
 :Lazy
 ```
 
-Find nvim-cursor in the list. If not loaded, try:
+Find fern in the list. If not loaded, try:
 ```vim
-:Lazy load nvim-cursor
+:Lazy load fern
 ```
 
 ### Commands Not Available
 
 Check if plugin initialized:
 ```vim
-:lua =require("nvim-cursor")
+:lua =require("fern")
 ```
 
 Should return a table, not an error.
@@ -359,7 +365,7 @@ Should show the mapping. If not:
 
 If pane doesn't appear:
 ```vim
-:lua require("nvim-cursor.ui.output").open()
+:lua require("fern.ui.output").open()
 ```
 
 Check for errors in `:messages`.
@@ -400,8 +406,8 @@ After testing:
 1. **Customize Configuration** - Adjust keymaps, prompts, UI to your preference
 2. **Add Custom Actions** - Create your own AI actions
 3. **Integrate with Workflow** - Use in daily coding
-4. **Report Issues** - File bugs or feature requests at [github.com/tungsheng/nvim-cursor/issues](https://github.com/tungsheng/nvim-cursor/issues)
-5. **Contribute** - Submit PRs for improvements at [github.com/tungsheng/nvim-cursor](https://github.com/tungsheng/nvim-cursor)
+4. **Report Issues** - File bugs or feature requests at [github.com/tungsheng/fern/issues](https://github.com/tungsheng/fern/issues)
+5. **Contribute** - Submit PRs for improvements at [github.com/tungsheng/fern](https://github.com/tungsheng/fern)
 
 ## Automated Testing (Future)
 

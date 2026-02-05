@@ -1,6 +1,6 @@
 # Security Guide
 
-This document outlines security best practices for using nvim-cursor safely.
+This document outlines security best practices for using fern safely.
 
 ## Table of Contents
 
@@ -121,7 +121,7 @@ echo $CURSOR_API_KEY
 echo $CURSOR_API_KEY
 
 # Test in Neovim
-nvim -c "checkhealth nvim-cursor" -c "qa"
+nvim -c "checkhealth fern" -c "qa"
 ```
 
 ## File Permissions
@@ -282,7 +282,7 @@ export ANTHROPIC_API_KEY="your_anthropic_key"
 
 ## Security Checklist
 
-Before using nvim-cursor, verify:
+Before using fern, verify:
 
 - [ ] API key is in `~/.env.secrets`, not in Lua config
 - [ ] `~/.env.secrets` has `600` permissions
@@ -290,13 +290,13 @@ Before using nvim-cursor, verify:
 - [ ] Shell config sources `~/.env.secrets` on startup
 - [ ] Environment variable is set: `echo $CURSOR_API_KEY` returns value
 - [ ] New terminal sessions have the variable set
-- [ ] `:checkhealth nvim-cursor` passes all checks
+- [ ] `:checkhealth fern` passes all checks
 - [ ] No API keys appear in git history: `git log -p | grep -i api_key`
 
 ### After Setup
 
 - [ ] Test the plugin with a simple request
-- [ ] Check logs don't contain sensitive data: `~/.cache/nvim/nvim-cursor.log`
+- [ ] Check logs don't contain sensitive data: `~/.cache/nvim/fern.log`
 - [ ] Verify the plugin warns if key is hardcoded (test by temporarily adding to config)
 
 ### Regular Maintenance

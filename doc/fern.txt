@@ -1,0 +1,252 @@
+*fern.txt*  AI-powered code assistance for Neovim
+
+==============================================================================
+CONTENTS                                                      *fern-contents*
+
+    1. Introduction ............................ |fern-intro|
+    2. Requirements ............................ |fern-requirements|
+    3. Installation ............................ |fern-installation|
+    4. Configuration ........................... |fern-configuration|
+    5. Providers ............................... |fern-providers|
+    6. Usage ................................... |fern-usage|
+    7. Commands ................................ |fern-commands|
+    8. Keymaps ................................. |fern-keymaps|
+    9. API ..................................... |fern-api|
+   10. Troubleshooting ......................... |fern-troubleshooting|
+
+==============================================================================
+INTRODUCTION                                                    *fern-intro*
+
+fern is a Neovim plugin that provides AI-powered code assistance using
+multiple LLM providers. Features include:
+
+- Real-time streaming responses
+- Multiple providers: Cursor, OpenAI, Anthropic, OpenAI-compatible
+- Floating input window for prompts
+- Configurable split pane output
+- Predefined actions (explain, document, refactor, fix bugs)
+- Custom prompt support
+- Context-aware code analysis
+
+==============================================================================
+REQUIREMENTS                                            *fern-requirements*
+
+- Neovim >= 0.9.0
+- curl (for API requests)
+- API key for your chosen provider
+
+==============================================================================
+INSTALLATION                                            *fern-installation*
+
+Using lazy.nvim: >lua
+    {
+      "tungsheng/fern",
+      event = "VeryLazy",
+      config = function()
+        require("fern").setup()
+      end
+    }
+<
+
+Set your API key (example for Anthropic): >bash
+    export ANTHROPIC_API_KEY="your-api-key-here"
+<
+
+==============================================================================
+CONFIGURATION                                          *fern-configuration*
+
+fern.setup({opts})                                        *fern.setup()*
+    Configure the plugin with custom options.
+
+    Parameters: ~
+        {opts}  (table) Configuration options
+
+    Default configuration: >lua
+        {
+          api = {
+            provider = "cursor",  -- "cursor"|"openai"|"anthropic"|"openai_compat"
+            cursor    = { endpoint = "...", model = "gpt-4" },
+            openai    = { endpoint = "...", model = "gpt-4o" },
+            anthropic = { endpoint = "...", model = "claude-sonnet-4-20250514",
+                          max_tokens = 4096 },
+            openai_compat = { endpoint = "http://localhost:11434/v1/chat/completions",
+                              model = "llama3" },
+          },
+          ui = {
+            input  = { width = 80, height = 10, border = "rounded",
+                       title = " Fern AI Prompt " },
+            output = { position = "right", size = 50, border = "rounded",
+                       title = " Fern AI Response ", filetype = "markdown" },
+          },
+          keymaps = {
+            enabled = true,
+            mappings = {
+              toggle_output = "<leader>at",
+              custom_prompt = "<leader>ac",
+              explain_selection = "<leader>ae",
+              explain_buffer = "<leader>aE",
+              generate_doc = "<leader>ad",
+              refactor_code = "<leader>ar",
+              fix_bug = "<leader>af",
+            },
+          },
+        }
+<
+
+==============================================================================
+PROVIDERS                                                  *fern-providers*
+
+Cursor ~
+    provider = "cursor"
+    Environment variable: CURSOR_API_KEY
+    Endpoint: https://api.cursor.sh/v1/chat/completions
+
+OpenAI ~
+    provider = "openai"
+    Environment variable: OPENAI_API_KEY
+    Endpoint: https://api.openai.com/v1/chat/completions
+
+Anthropic (Claude) ~
+    provider = "anthropic"
+    Environment variable: ANTHROPIC_API_KEY
+    Endpoint: https://api.anthropic.com/v1/messages
+
+OpenAI-Compatible ~
+    provider = "openai_compat"
+    Environment variable: OPENAI_COMPAT_API_KEY (optional)
+    Default endpoint: http://localhost:11434/v1/chat/completions
+    Works with: Ollama, Groq, Together, vLLM, LM Studio, etc.
+
+==============================================================================
+USAGE                                                          *fern-usage*
+
+Basic workflow:
+
+1. Select code in visual mode
+2. Press |<leader>ae| to explain the code
+3. Response streams into split pane
+4. Press |<leader>at| to toggle pane visibility
+
+Custom prompt workflow:
+
+1. Press |<leader>ac| to open prompt window
+2. Type your custom instructions
+3. Press <CR> to submit
+4. Response streams into split pane
+
+==============================================================================
+COMMANDS                                                    *fern-commands*
+
+:FernExplain                                              *:FernExplain*
+    Explain the currently selected code. Requires visual mode selection.
+
+:FernDoc                                                      *:FernDoc*
+    Generate documentation for selected code.
+
+:FernRefactor                                              *:FernRefactor*
+    Get refactoring suggestions for selected code.
+
+:FernFixBug                                                  *:FernFixBug*
+    Analyze and fix bugs in selected code.
+
+:FernPrompt                                                  *:FernPrompt*
+    Open floating input window for custom AI prompt.
+
+:FernToggle                                                  *:FernToggle*
+    Toggle the AI response pane visibility.
+
+:FernCancel                                                  *:FernCancel*
+    Cancel the current AI request.
+
+:FernHistoryClear                                      *:FernHistoryClear*
+    Clear the AI response history.
+
+:FernVersion                                                *:FernVersion*
+    Show the plugin version.
+
+==============================================================================
+KEYMAPS                                                    *fern-keymaps*
+
+Default keymaps (can be customized via configuration):
+
+<leader>ae    Visual mode: Explain selected code           *<leader>ae*
+<leader>aE    Normal mode: Explain entire buffer           *<leader>aE*
+<leader>ad    Visual mode: Generate documentation          *<leader>ad*
+<leader>ar    Visual mode: Refactor suggestions            *<leader>ar*
+<leader>af    Visual mode: Fix bugs                        *<leader>af*
+<leader>ac    Normal/Visual: Open custom prompt            *<leader>ac*
+<leader>at    Normal/Visual: Toggle AI response pane       *<leader>at*
+<C-c>         Normal/Visual: Cancel current request
+
+==============================================================================
+API                                                            *fern-api*
+
+For plugin developers and advanced users.
+
+require("fern")                                                    *fern*
+    Main module with setup function.
+
+require("fern.config")                                    *fern.config*
+    Configuration management.
+
+require("fern.ui.input")                                *fern.ui.input*
+    Floating input window.
+
+require("fern.ui.output")                              *fern.ui.output*
+    Response split pane.
+
+require("fern.context")                                  *fern.context*
+    Context extraction from buffers.
+
+require("fern.actions")                                  *fern.actions*
+    Predefined AI actions.
+
+require("fern.api.client")                          *fern.api.client*
+    API client interface.
+
+    Functions: ~
+        send_request(...)      Send streaming API request
+        cancel_current()       Cancel active provider's request
+        register_provider()    Register custom AI provider
+
+==============================================================================
+TROUBLESHOOTING                                    *fern-troubleshooting*
+
+No API key found ~
+    Set the environment variable for your provider:
+    >bash
+        export CURSOR_API_KEY="your-key"
+        export OPENAI_API_KEY="your-key"
+        export ANTHROPIC_API_KEY="your-key"
+<
+
+Connection errors ~
+    - Check internet connection
+    - Verify API endpoint in configuration
+    - For local providers, ensure server is running
+    - Increase timeout in provider config
+    - Run :checkhealth fern for diagnostics
+
+Keymaps not working ~
+    Check for conflicts:
+    >vim
+        :verbose map <leader>ae
+<
+    Verify plugin loaded:
+    >vim
+        :echo g:loaded_fern
+<
+
+Enable debug logging ~
+    >lua
+        require("fern").setup({ log = { level = "debug" } })
+<
+    Check logs at: ~/.cache/nvim/fern.log
+
+==============================================================================
+LICENSE                                                    *fern-license*
+
+MIT License
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
