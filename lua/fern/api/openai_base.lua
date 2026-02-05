@@ -48,13 +48,17 @@ function M.send_request(provider_name, provider_opts, prompt, context, options, 
     content = user_content
   })
 
-  -- Build request body
+  -- Build request body (omit temperature when not set so reasoning models
+  -- like o1/o3-mini that only accept the default value still work)
   local request_body = {
     model = provider_opts.model,
     messages = messages,
     stream = true,
-    temperature = options.temperature or 0.3,
   }
+
+  if options.temperature then
+    request_body.temperature = options.temperature
+  end
 
   local json_body = vim.json.encode(request_body)
 
