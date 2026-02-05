@@ -98,22 +98,18 @@ M.defaults = {
 	actions = {
 		explain = {
 			system_prompt = "Explain the following code in detail, including purpose, logic, and any edge cases:",
-			temperature = 1,
 			show_diff = false,
 		},
 		doc = {
 			system_prompt = "Generate comprehensive documentation for the following code, including function/class descriptions, parameters, return values, and usage examples:",
-			temperature = 1,
 			show_diff = false,
 		},
 		refactor = {
 			system_prompt = "Suggest refactoring improvements for the following code, focusing on readability, performance, and best practices:",
-			temperature = 1,
 			show_diff = true,
 		},
 		fix_bug = {
 			system_prompt = "Analyze this code for bugs and provide fixes with explanations:",
-			temperature = 1,
 			show_diff = true,
 		},
 	},
